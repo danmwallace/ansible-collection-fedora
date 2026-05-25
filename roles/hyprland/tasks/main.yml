@@ -1,0 +1,155 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for hyprland
+
+- name: "Load theme variables"
+  ansible.builtin.include_vars:
+    file: "themes/{{ hyprland_theme }}.yml"
+
+- name: "Enable lionheartp/Hyprland COPR repository"
+  community.general.copr:
+    name: lionheartp/Hyprland
+    state: enabled
+  become: true
+
+- name: "Install Hyprland and dependencies"
+  ansible.builtin.dnf:
+    name:
+      - cups-pk-helper
+      - hyprland
+      - hyprpaper
+      - hyprpicker
+      - hypridle
+      - hyprlock
+      - hyprpolkitagent
+      - sddm
+      - waybar
+      - alacritty
+      - wl-clipboard
+      - grim
+      - fish
+      - slurp
+      - wofi
+      - pamixer
+      - pavucontrol
+      - picom
+      - light
+      - bluez
+      - bluez-tools
+      - blueman
+      - tuned
+      - tuned-ppd
+      - waybar
+      - podman
+      - nautilus
+      - pavucontrol
+      - simple-scan
+      - firefox
+      - libreoffice
+      - thunderbird
+      - flameshot
+      - grim
+      - alsa-sof-firmware
+      - alsa-utils
+      - NetworkManager-wifi
+      - nm-connection-editor-desktop
+      - nwg-drawer
+      - nwg-dock-hyprland
+      - waypaper
+      - gvfs
+      - gvfs-mtp
+    state: present
+  become: true
+
+- name: "Enable and start SDDM service"
+  ansible.builtin.systemd_service:
+    name: sddm
+    enabled: true
+    state: started
+  become: true
+
+- name: "Set systemd default target to graphical.target"
+  ansible.builtin.command: "systemctl set-default graphical.target"
+  become: true
+  register: hyprland_set_default
+  changed_when: "'Created symlink' in (hyprland_set_default.stderr | default(''))"
+
+- name: "Ensure user config directories exist"
+  ansible.builtin.file:
+    path: "/home/{{ hyprland_user }}/.config/{{ item }}"
+    state: directory
+    owner: "{{ hyprland_user }}"
+    group: "{{ hyprland_user }}"
+    mode: "0755"
+  become: true
+  become_user: "{{ hyprland_user }}"
+  loop:
+    - hypr
+    - hypr/scripts
+    - waybar
+    - alacritty
+    - wofi
+    - nwg-drawer
+    - nwg-dock-hyprland
+
+- name: "Copy static Hyprland configuration files"
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "/home/{{ hyprland_user }}/.config/{{ item.dest }}"
+    owner: "{{ hyprland_user }}"
+    group: "{{ hyprland_user }}"
+    mode: "0755"
+  become: true
+  become_user: "{{ hyprland_user }}"
+  loop:
+    - src: home/dwallace/config/hypr/xdg-portal-hyprland
+      dest: hypr/xdg-portal-hyprland
+    - src: home/dwallace/config/hypr/scripts/sleep.sh
+      dest: hypr/scripts/sleep.sh
+    - src: home/dwallace/config/wofi/config
+      dest: wofi/config
+
+- name: "Deploy themed configuration files"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/home/{{ hyprland_user }}/.config/{{ item.dest }}"
+    owner: "{{ hyprland_user }}"
+    group: "{{ hyprland_user }}"
+    mode: "0644"
+  become: true
+  become_user: "{{ hyprland_user }}"
+  loop:
+    - src: home/config/hypr/hyprland.conf.j2
+      dest: hypr/hyprland.conf
+    - src: home/config/hypr/hyprlock.conf.j2
+      dest: hypr/hyprlock.conf
+    - src: home/config/waybar/style.css.j2
+      dest: waybar/style.css
+    - src: home/config/waybar/config.j2
+      dest: waybar/config
+    - src: home/config/alacritty/alacritty.toml.j2
+      dest: alacritty/alacritty.toml
+    - src: home/config/wofi/style.css.j2
+      dest: wofi/style.css
+    - src: home/config/wofi/style-power.css.j2
+      dest: wofi/style-power.css
+    - src: home/config/wofi/style-run.css.j2
+      dest: wofi/style-run.css
+    - src: home/config/nwg-drawer/drawer.css.j2
+      dest: nwg-drawer/drawer.css
+    - src: home/config/nwg-dock-hyprland/style.css.j2
+      dest: nwg-dock-hyprland/style.css
+
+- name: "Copy SDDM themes"
+  ansible.builtin.copy:
+    src: "usr/share/sddm/themes/"
+    dest: "/usr/share/sddm/themes/"
+    mode: '0755'
+  become: true
+
+- name: "Copy SDDM configuration"
+  ansible.builtin.copy:
+    src: "etc/sddm.conf.d/"
+    dest: "/etc/sddm.conf.d/"
+    mode: '0644'
+  become: true
