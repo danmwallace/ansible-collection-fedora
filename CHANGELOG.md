@@ -14,7 +14,7 @@ and this collection adheres to [Semantic Versioning](https://semver.org/spec/v2.
 - Relicensed from GPL-2.0-or-later to MIT.
 - Regenerated the collection + `hyprland` role README to the standardized house style.
 
-## [1.0.0] - TBD
+## [1.0.0] - 2026-05-01
 
 ### Added
 
