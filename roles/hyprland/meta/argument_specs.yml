@@ -50,3 +50,15 @@ argument_specs:
         type: bool
         required: false
         default: true
+      hyprland_wallpaper:
+        description:
+          - Image path passed to swaybg at session start.
+        type: str
+        required: false
+        default: "~/Pictures/Wallpapers/gray-abstract.jpg"
+      hyprland_lock_wallpaper:
+        description:
+          - Image path used as the hyprlock background.
+        type: str
+        required: false
+        default: "~/Pictures/Wallpapers/purple-green-foliage.jpg"

@@ -16,3 +16,8 @@ hyprland_manage_copr: true
 # Set false where systemd is not running (container image builds). The role
 # then neither enables/starts sddm nor changes the default target.
 hyprland_manage_services: true
+
+# Wallpaper shown by swaybg, and the hyprlock background. Any path readable by
+# the user; image builds point these at a file shipped in /usr/share.
+hyprland_wallpaper: "~/Pictures/Wallpapers/gray-abstract.jpg"
+hyprland_lock_wallpaper: "~/Pictures/Wallpapers/purple-green-foliage.jpg"

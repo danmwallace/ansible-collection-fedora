@@ -7,6 +7,19 @@ and this collection adheres to [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-03
+
+### Added
+
+- `hyprland_wallpaper` and `hyprland_lock_wallpaper` so the swaybg and hyprlock
+  image paths are configurable (defaults unchanged).
+
+### Fixed
+
+- `hyprland.conf` parses cleanly on Hyprland 0.56: removed `dwindle:pseudotile`
+  and `misc:vfr` (options no longer exist) and changed the `togglesplit` bind to
+  `layoutmsg, togglesplit` (the bare dispatcher was removed upstream).
+
 ## [1.1.1] - 2026-10-03
 
 ### Fixed

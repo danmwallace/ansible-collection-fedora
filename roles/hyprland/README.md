@@ -25,6 +25,8 @@ The role enables the `lionheartp/Hyprland` COPR repository and installs from it.
 | `hyprland_home_dir`        | str  | no       | `/home/{{ hyprland_user }}`          | Directory that receives `.config/`. Use `/etc/skel` for image builds (files become root-owned). |
 | `hyprland_manage_copr`     | bool | no       | `true`                               | Enable the `lionheartp/Hyprland` COPR. Set `false` if the caller already did.                   |
 | `hyprland_manage_services` | bool | no       | `true`                               | Enable/start `sddm` and set `graphical.target`. Set `false` without a running systemd.          |
+| `hyprland_wallpaper`       | str  | no       | `~/Pictures/Wallpapers/gray-abstract.jpg` | Image passed to `swaybg` at session start.                                                 |
+| `hyprland_lock_wallpaper`  | str  | no       | `~/Pictures/Wallpapers/purple-green-foliage.jpg` | Image used as the `hyprlock` background.                                             |
 
 The `hyprland_theme` value selects a palette file under `vars/themes/<theme>.yml`,
 which exposes the `hyprland_palette` dict consumed by the role's Jinja templates.
