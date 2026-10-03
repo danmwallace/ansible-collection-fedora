@@ -7,6 +7,16 @@ and this collection adheres to [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-03
+
+### Fixed
+
+- Removed the "Ensure SDDM themes are present" task. Its source directory
+  `files/usr/share/sddm/themes/` was empty, so git never tracked it and the
+  role failed with "Could not find or access" when installed from the git tag
+  or Galaxy tarball. Only a working-tree checkout with the empty directory
+  ever worked.
+
 ## [1.1.0] - 2026-10-03
 
 ### Added
