@@ -164,13 +164,6 @@
   become: true
   become_user: "{{ hyprland_file_owner }}"
 
-- name: "Ensure SDDM themes are present"
-  ansible.builtin.copy:
-    src: "usr/share/sddm/themes/"
-    dest: "/usr/share/sddm/themes/"
-    mode: "0755"
-  become: true
-
 - name: "Ensure SDDM configuration is present"
   ansible.builtin.copy:
     src: "etc/sddm.conf.d/"
