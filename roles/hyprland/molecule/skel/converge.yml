@@ -1,0 +1,27 @@
+---
+- name: Converge in skel mode
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    # The fedora:44 base container ships no python3, so bootstrap before facts.
+    - name: Ensure python3, dnf5 copr plugin and python bindings are present
+      ansible.builtin.raw: dnf -y install python3 dnf5-plugins python3-libdnf5
+      changed_when: false
+
+    - name: Gather facts now that python3 exists
+      ansible.builtin.setup:
+
+    - name: Ensure the Hyprland COPR is enabled the way the image build does it
+      ansible.builtin.command: dnf -y copr enable lionheartp/Hyprland
+      args:
+        creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:lionheartp:Hyprland.repo
+
+    - name: Apply hyprland role in skel mode
+      ansible.builtin.include_role:
+        name: danmwallace.fedora.hyprland
+      vars:
+        hyprland_user: root
+        hyprland_home_dir: /etc/skel
+        hyprland_manage_copr: false
+        hyprland_manage_services: false
+        hyprland_theme: nord

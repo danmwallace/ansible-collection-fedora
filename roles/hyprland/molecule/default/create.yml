@@ -6,7 +6,7 @@
     - name: Start hyprland-instance container
       containers.podman.podman_container:
         name: hyprland-instance
-        image: registry.fedoraproject.org/fedora:42
+        image: quay.io/fedora/fedora-bootc:44
         state: started
         command: /sbin/init
         privileged: true

@@ -28,3 +28,25 @@ argument_specs:
           - monochrome
           - nord
           - tokyo-night
+      hyprland_home_dir:
+        description:
+          - Directory that receives the rendered .config tree. Defaults to the target
+            user's home. Set to /etc/skel to render a template home for users created
+            later, for example inside a bootc image build; files are then root-owned.
+        type: str
+        required: false
+        default: "/home/{{ hyprland_user }}"
+      hyprland_manage_copr:
+        description:
+          - Whether the role enables the lionheartp/Hyprland COPR. Set false when the
+            caller enabled it already (image builds use dnf copr enable).
+        type: bool
+        required: false
+        default: true
+      hyprland_manage_services:
+        description:
+          - Whether the role enables and starts sddm and sets graphical.target as the
+            default. Set false where systemd is not running, such as a container build.
+        type: bool
+        required: false
+        default: true

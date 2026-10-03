@@ -6,83 +6,96 @@
   ansible.builtin.include_vars:
     file: "themes/{{ hyprland_theme }}.yml"
 
-- name: "Enable lionheartp/Hyprland COPR repository"
+- name: "Ensure the python-dnf bindings required by the copr module are present"
+  ansible.builtin.dnf:
+    name: python3-dnf
+    state: present
+  become: true
+  when: hyprland_manage_copr
+
+- name: "Ensure lionheartp/Hyprland COPR repository is enabled"
   community.general.copr:
     name: lionheartp/Hyprland
     state: enabled
   become: true
+  when: hyprland_manage_copr
 
-- name: "Install Hyprland and dependencies"
+- name: "Ensure Hyprland and its supporting packages are installed"
   ansible.builtin.dnf:
     name:
-      - cups-pk-helper
       - hyprland
       - hyprpaper
       - hyprpicker
       - hypridle
       - hyprlock
       - hyprpolkitagent
+      - xdg-desktop-portal-hyprland
+      - xdg-desktop-portal-gtk
       - sddm
+      - sddm-x11
       - waybar
       - alacritty
+      - wofi
+      - nwg-drawer
+      - waypaper
+      - swaybg
+      - cliphist
       - wl-clipboard
       - grim
-      - fish
       - slurp
-      - wofi
       - pamixer
       - pavucontrol
-      - picom
       - light
       - bluez
       - bluez-tools
       - blueman
       - tuned
       - tuned-ppd
-      - waybar
+      - network-manager-applet
+      - NetworkManager-wifi
+      - nm-connection-editor-desktop
+      - gnome-keyring
+      - qt6ct
+      - qt5-qtwayland
+      - qt6-qtwayland
+      - cups-pk-helper
       - podman
       - nautilus
-      - pavucontrol
       - simple-scan
       - firefox
       - libreoffice
       - thunderbird
-      - flameshot
-      - grim
       - alsa-sof-firmware
       - alsa-utils
-      - NetworkManager-wifi
-      - nm-connection-editor-desktop
-      - nwg-drawer
-      - nwg-dock-hyprland
-      - waypaper
       - gvfs
       - gvfs-mtp
     state: present
   become: true
 
-- name: "Enable and start SDDM service"
+- name: "Ensure SDDM is enabled and running"
   ansible.builtin.systemd_service:
     name: sddm
     enabled: true
     state: started
   become: true
+  when: hyprland_manage_services
 
-- name: "Set systemd default target to graphical.target"
+- name: "Ensure the default systemd target is graphical"
   ansible.builtin.command: "systemctl set-default graphical.target"
   become: true
   register: hyprland_set_default
   changed_when: "'Created symlink' in (hyprland_set_default.stderr | default(''))"
+  when: hyprland_manage_services
 
-- name: "Ensure user config directories exist"
+- name: "Ensure config directories exist"
   ansible.builtin.file:
-    path: "/home/{{ hyprland_user }}/.config/{{ item }}"
+    path: "{{ hyprland_home_dir }}/.config/{{ item }}"
     state: directory
-    owner: "{{ hyprland_user }}"
-    group: "{{ hyprland_user }}"
+    owner: "{{ hyprland_file_owner }}"
+    group: "{{ hyprland_file_owner }}"
     mode: "0755"
   become: true
-  become_user: "{{ hyprland_user }}"
+  become_user: "{{ hyprland_file_owner }}"
   loop:
     - hypr
     - hypr/scripts
@@ -92,15 +105,15 @@
     - nwg-drawer
     - nwg-dock-hyprland
 
-- name: "Copy static Hyprland configuration files"
+- name: "Ensure static Hyprland configuration files are present"
   ansible.builtin.copy:
     src: "{{ item.src }}"
-    dest: "/home/{{ hyprland_user }}/.config/{{ item.dest }}"
-    owner: "{{ hyprland_user }}"
-    group: "{{ hyprland_user }}"
+    dest: "{{ hyprland_home_dir }}/.config/{{ item.dest }}"
+    owner: "{{ hyprland_file_owner }}"
+    group: "{{ hyprland_file_owner }}"
     mode: "0755"
   become: true
-  become_user: "{{ hyprland_user }}"
+  become_user: "{{ hyprland_file_owner }}"
   loop:
     - src: home/dwallace/config/hypr/xdg-portal-hyprland
       dest: hypr/xdg-portal-hyprland
@@ -109,15 +122,15 @@
     - src: home/dwallace/config/wofi/config
       dest: wofi/config
 
-- name: "Deploy themed configuration files"
+- name: "Ensure themed configuration files are rendered"
   ansible.builtin.template:
     src: "{{ item.src }}"
-    dest: "/home/{{ hyprland_user }}/.config/{{ item.dest }}"
-    owner: "{{ hyprland_user }}"
-    group: "{{ hyprland_user }}"
+    dest: "{{ hyprland_home_dir }}/.config/{{ item.dest }}"
+    owner: "{{ hyprland_file_owner }}"
+    group: "{{ hyprland_file_owner }}"
     mode: "0644"
   become: true
-  become_user: "{{ hyprland_user }}"
+  become_user: "{{ hyprland_file_owner }}"
   loop:
     - src: home/config/hypr/hyprland.conf.j2
       dest: hypr/hyprland.conf
@@ -140,16 +153,27 @@
     - src: home/config/nwg-dock-hyprland/style.css.j2
       dest: nwg-dock-hyprland/style.css
 
-- name: "Copy SDDM themes"
+- name: "Ensure a per-machine local.conf exists (never overwritten)"
+  ansible.builtin.copy:
+    content: "# Per-machine Hyprland overrides. Sourced last by hyprland.conf; never managed.\n"
+    dest: "{{ hyprland_home_dir }}/.config/hypr/local.conf"
+    owner: "{{ hyprland_file_owner }}"
+    group: "{{ hyprland_file_owner }}"
+    mode: "0644"
+    force: false
+  become: true
+  become_user: "{{ hyprland_file_owner }}"
+
+- name: "Ensure SDDM themes are present"
   ansible.builtin.copy:
     src: "usr/share/sddm/themes/"
     dest: "/usr/share/sddm/themes/"
-    mode: '0755'
+    mode: "0755"
   become: true
 
-- name: "Copy SDDM configuration"
+- name: "Ensure SDDM configuration is present"
   ansible.builtin.copy:
     src: "etc/sddm.conf.d/"
     dest: "/etc/sddm.conf.d/"
-    mode: '0644'
+    mode: "0644"
   become: true

@@ -70,8 +70,10 @@ exec-once = wl-paste --watch cliphist store
 exec-once = rm "$HOME/.cache/cliphist/db" &
 
 # Dock
-exec-once = nwg-dock-hyprland -x -o "eDP-1"
-exec-once = nwg-dock-hyprland -x -o "DP-7"
+# nwg-dock-hyprland is not packaged for Fedora 44; re-enable via the
+# nightishaman/nwg-shell COPR if wanted.
+# exec-once = nwg-dock-hyprland -x -o "eDP-1"
+# exec-once = nwg-dock-hyprland -x -o "DP-7"
 
 # Notification daemon (if using)
 # exec-once = swaync
@@ -484,3 +486,12 @@ layerrule = blur on, match:namespace wofi
 bindl = , switch:on:Lid Switch, exec, hyprctl keyword monitor "eDP-1, disable"
 # Enable internal display when lid is opened
 bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor "eDP-1, 2256x1504@60, auto, 2"
+
+
+#############################
+### PER-MACHINE OVERRIDES ###
+#############################
+
+# Keep machine-specific settings (VM monitor, NVIDIA env, etc.) here.
+# This file is never managed by the role or the image.
+source = ~/.config/hypr/local.conf

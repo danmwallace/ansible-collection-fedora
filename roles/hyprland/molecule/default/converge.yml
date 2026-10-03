@@ -3,6 +3,20 @@
   hosts: molecule
   gather_facts: true
   tasks:
+    # Inside the systemd container resolved has no upstream servers and
+    # /etc/resolv.conf is its stub symlink, so lookups never reach the
+    # nameservers podman wrote. Stop resolved and make resolv.conf a plain
+    # file holding those nameservers.
+    - name: Ensure systemd-resolved is not intercepting DNS in the container
+      ansible.builtin.shell: |
+        set -e
+        systemctl disable --now systemd-resolved
+        tmp=$(mktemp)
+        cat /etc/resolv.conf > "$tmp"
+        rm -f /etc/resolv.conf
+        install -m 0644 "$tmp" /etc/resolv.conf
+      changed_when: false
+
     - name: Ensure target user exists for dotfile rendering
       ansible.builtin.user:
         name: hyprtest
