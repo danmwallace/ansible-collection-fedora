@@ -207,7 +207,6 @@ workspace = f[1], gapsout:0, gapsin:0, border:false, rounding:false
 
 # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/
 dwindle {
-    pseudotile = true
     preserve_split = true
     smart_split = false
     smart_resizing = true
@@ -245,7 +244,6 @@ misc {
 
     # VRR
     vrr = 2
-    vfr = true
 }
 
 # Cursor behavior
@@ -317,7 +315,7 @@ bind = $mainMod, V, togglefloating,
 bind = $mainMod, F, fullscreen, 0
 bind = $mainMod SHIFT, F, fullscreen, 1
 bind = $mainMod, P, pseudo # dwindle
-bind = $mainMod, J, togglesplit # dwindle
+bind = $mainMod, J, layoutmsg, togglesplit # dwindle
 
 # Session management
 bind = $mainMod, L, exec, $lock
