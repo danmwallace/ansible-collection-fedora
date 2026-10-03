@@ -58,7 +58,7 @@ exec-once = systemctl --user start hyprpolkitagent
 exec-once = xhost +SI:localuser:$(whoami)
 
 # Wallpaper and theming
-exec-once = swaybg -m fill -i ~/Pictures/Wallpapers/gray-abstract.jpg
+exec-once = swaybg -m fill -i {{ hyprland_wallpaper }}
 # Alternative: exec-once = hyprpaper
 
 # Status bar and applets
