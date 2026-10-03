@@ -9,7 +9,7 @@ part of Dan's homelab automation and is consumed by the `ansible-homelab-cfg` co
 ## Requirements
 
 - Ansible >= 2.16
-- Target host running Fedora (41, 42, or 43)
+- Target host running Fedora (42, 43, or 44)
 - Collection dependencies (from `galaxy.yml`):
   - `community.general >= 8.0.0` (for the `copr` module used by the `hyprland` role)
 - Privilege escalation (`become: true`) on the target — roles install system packages,
