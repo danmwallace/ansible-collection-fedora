@@ -1,3 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 # vars file for hyprland
+
+# In skel mode the rendered files belong to root; otherwise to the target user.
+hyprland_skel_mode: "{{ hyprland_home_dir == '/etc/skel' }}"
+hyprland_file_owner: "{{ 'root' if hyprland_skel_mode else hyprland_user }}"

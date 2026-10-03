@@ -1,0 +1,11 @@
+---
+- name: Create molecule instance
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Start hyprland-skel container
+      containers.podman.podman_container:
+        name: hyprland-skel
+        image: registry.fedoraproject.org/fedora:44
+        state: started
+        command: sleep infinity

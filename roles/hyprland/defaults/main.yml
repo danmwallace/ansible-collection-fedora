@@ -4,3 +4,15 @@
 
 hyprland_user: "{{ ansible_facts['env']['USER'] }}"
 hyprland_theme: "nord"
+
+# Directory that receives the rendered .config tree. Point at /etc/skel to
+# render a template home for users created later (used by image builds).
+hyprland_home_dir: "/home/{{ hyprland_user }}"
+
+# Set false when the caller has already enabled the lionheartp/Hyprland COPR
+# (image builds do it with `dnf copr enable` before running the role).
+hyprland_manage_copr: true
+
+# Set false where systemd is not running (container image builds). The role
+# then neither enables/starts sddm nor changes the default target.
+hyprland_manage_services: true
