@@ -98,6 +98,7 @@
   become_user: "{{ hyprland_file_owner }}"
   loop:
     - hypr
+    - hypr/conf
     - hypr/scripts
     - waybar
     - alacritty
@@ -132,8 +133,22 @@
   become: true
   become_user: "{{ hyprland_file_owner }}"
   loop:
-    - src: home/config/hypr/hyprland.conf.j2
-      dest: hypr/hyprland.conf
+    - src: home/config/hypr/hyprland.lua.j2
+      dest: hypr/hyprland.lua
+    - src: home/config/hypr/conf/monitors.lua.j2
+      dest: hypr/conf/monitors.lua
+    - src: home/config/hypr/conf/env.lua.j2
+      dest: hypr/conf/env.lua
+    - src: home/config/hypr/conf/autostart.lua.j2
+      dest: hypr/conf/autostart.lua
+    - src: home/config/hypr/conf/look.lua.j2
+      dest: hypr/conf/look.lua
+    - src: home/config/hypr/conf/input.lua.j2
+      dest: hypr/conf/input.lua
+    - src: home/config/hypr/conf/binds.lua.j2
+      dest: hypr/conf/binds.lua
+    - src: home/config/hypr/conf/rules.lua.j2
+      dest: hypr/conf/rules.lua
     - src: home/config/hypr/hyprlock.conf.j2
       dest: hypr/hyprlock.conf
     - src: home/config/waybar/style.css.j2
@@ -153,10 +168,10 @@
     - src: home/config/nwg-dock-hyprland/style.css.j2
       dest: nwg-dock-hyprland/style.css
 
-- name: "Ensure a per-machine local.conf exists (never overwritten)"
+- name: "Ensure a per-machine local.lua exists (never overwritten)"
   ansible.builtin.copy:
-    content: "# Per-machine Hyprland overrides. Sourced last by hyprland.conf; never managed.\n"
-    dest: "{{ hyprland_home_dir }}/.config/hypr/local.conf"
+    content: "-- Per-machine Hyprland overrides, loaded last by hyprland.lua. Never managed.\n"
+    dest: "{{ hyprland_home_dir }}/.config/hypr/local.lua"
     owner: "{{ hyprland_file_owner }}"
     group: "{{ hyprland_file_owner }}"
     mode: "0644"

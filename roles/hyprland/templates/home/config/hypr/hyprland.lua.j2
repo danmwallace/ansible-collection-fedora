@@ -1,0 +1,23 @@
+-- {{ ansible_managed }}
+-- Entry point. Theme values come from vars/themes/{{ hyprland_theme }}.yml;
+-- each conf/*.lua module reads the global `palette` table.
+
+palette = {
+{% for key, value in hyprland_palette.items() %}
+  {{ key }} = "{{ value }}",
+{% endfor %}
+}
+
+-- Each require runs in its own error scope: a broken module logs and the
+-- rest still load.
+require("conf.monitors")
+require("conf.autostart")
+require("conf.env")
+require("conf.look")
+require("conf.input")
+require("conf.binds")
+require("conf.rules")
+
+-- Per-machine overrides (VM monitor, NVIDIA env, ...). Created once by the
+-- role, never managed afterwards. Missing file is not an error.
+pcall(require, "local")

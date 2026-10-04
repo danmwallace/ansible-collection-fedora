@@ -2,16 +2,25 @@
 - name: Verify skel mode
   hosts: molecule
   gather_facts: false
+  vars:
+    hyprland_verify_home: /etc/skel
   tasks:
     - name: Stat files rendered into /etc/skel
       ansible.builtin.stat:
-        path: "{{ item }}"
+        path: "{{ hyprland_verify_home }}/{{ item }}"
       loop:
-        - /etc/skel/.config/hypr/hyprland.conf
-        - /etc/skel/.config/hypr/hyprlock.conf
-        - /etc/skel/.config/hypr/local.conf
-        - /etc/skel/.config/waybar/config
-        - /etc/skel/.config/alacritty/alacritty.toml
+        - .config/hypr/hyprland.lua
+        - .config/hypr/conf/monitors.lua
+        - .config/hypr/conf/env.lua
+        - .config/hypr/conf/autostart.lua
+        - .config/hypr/conf/look.lua
+        - .config/hypr/conf/input.lua
+        - .config/hypr/conf/binds.lua
+        - .config/hypr/conf/rules.lua
+        - .config/hypr/local.lua
+        - .config/hypr/hyprlock.conf
+        - .config/waybar/config
+        - .config/alacritty/alacritty.toml
       register: hyprland_skel_files
 
     - name: Assert skel files exist and are root-owned
@@ -24,29 +33,54 @@
       loop_control:
         label: "{{ item.item }}"
 
-    - name: Read rendered hyprland.conf
-      ansible.builtin.slurp:
-        src: /etc/skel/.config/hypr/hyprland.conf
-      register: hyprland_skel_conf
-
-    - name: Assert hyprland.conf sources local.conf last
-      ansible.builtin.assert:
-        that:
-          - "(hyprland_skel_conf.content | b64decode).rstrip().endswith('source = ~/.config/hypr/local.conf')"
-
-    - name: Stat things the role must NOT have done in this mode
+    - name: Stat files the role must no longer render or touch
       ansible.builtin.stat:
         path: "{{ item }}"
-      # display-manager.service is NOT checked: Fedora's sddm RPM enables itself
-      # via systemd presets at install time, independent of the role.
       loop:
+        - /etc/skel/.config/hypr/hyprland.conf
+        - /etc/skel/.config/hypr/local.conf
         - /etc/systemd/system/default.target
         - /home/root
       register: hyprland_skel_forbidden
 
-    - name: Assert services and a home dir were not touched
+    - name: Assert the old config format and service changes are absent
       ansible.builtin.assert:
         that: not item.stat.exists
       loop: "{{ hyprland_skel_forbidden.results }}"
       loop_control:
         label: "{{ item.item }}"
+
+    - name: Read rendered hyprland.lua
+      ansible.builtin.slurp:
+        src: "{{ hyprland_verify_home }}/.config/hypr/hyprland.lua"
+      register: hyprland_skel_entry
+
+    - name: Assert the entry file carries the Nord palette and the override hook
+      vars:
+        rendered: "{{ hyprland_skel_entry.content | b64decode }}"
+      ansible.builtin.assert:
+        that:
+          - "'accent_primary = \"88c0d0\"' in rendered"
+          - "'pcall(require, \"local\")' in rendered"
+
+    - name: Copy the verify helper into the instance
+      ansible.builtin.copy:
+        src: ../verify-lua.sh
+        dest: /usr/local/bin/verify-lua.sh
+        mode: "0755"
+
+    - name: Verify the rendered tree parses with Hyprland when local.lua is absent
+      ansible.builtin.shell: |
+        set -e
+        tmp=$(mktemp -d); cp -r {{ hyprland_verify_home }}/.config/hypr "$tmp/hypr"
+        rm -f "$tmp/hypr/local.lua"
+        /usr/local/bin/verify-lua.sh "$tmp/hypr"
+      changed_when: false
+
+    - name: Verify the rendered tree parses with a local.lua that sets a monitor
+      ansible.builtin.shell: |
+        set -e
+        tmp=$(mktemp -d); cp -r {{ hyprland_verify_home }}/.config/hypr "$tmp/hypr"
+        printf 'hl.monitor({ output = "Virtual-1", mode = "preferred", position = "auto", scale = 1 })\n' > "$tmp/hypr/local.lua"
+        /usr/local/bin/verify-lua.sh "$tmp/hypr"
+      changed_when: false
