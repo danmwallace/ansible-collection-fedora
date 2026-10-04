@@ -24,6 +24,7 @@
   ansible.builtin.dnf:
     name:
       - hyprland
+      - hyprland-guiutils
       - hyprpaper
       - hyprpicker
       - hypridle
@@ -72,6 +73,43 @@
     state: present
   become: true
 
+- name: "Check whether the Nerd Font is already installed"
+  ansible.builtin.stat:
+    path: "{{ hyprland_nerd_font_dir }}/RobotoMonoNerdFontPropo-Regular.ttf"
+  register: hyprland_nerd_font_marker
+
+- name: "Ensure the Nerd Font archive is downloaded"
+  ansible.builtin.get_url:
+    url: "{{ hyprland_nerd_font_url }}"
+    dest: /tmp/hyprland-nerd-font.tar.xz
+    checksum: "{{ hyprland_nerd_font_checksum }}"
+    mode: "0644"
+  when: not hyprland_nerd_font_marker.stat.exists
+
+- name: "Ensure the Nerd Font directory exists"
+  ansible.builtin.file:
+    path: "{{ hyprland_nerd_font_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: "Ensure the Nerd Font is installed"
+  ansible.builtin.unarchive:
+    src: /tmp/hyprland-nerd-font.tar.xz
+    dest: "{{ hyprland_nerd_font_dir }}"
+    remote_src: true
+    creates: "{{ hyprland_nerd_font_dir }}/RobotoMonoNerdFontPropo-Regular.ttf"
+    mode: "0644"
+  become: true
+  when: not hyprland_nerd_font_marker.stat.exists
+  notify: Refresh font cache
+
+- name: "Ensure the Nerd Font archive is removed after install"
+  ansible.builtin.file:
+    path: /tmp/hyprland-nerd-font.tar.xz
+    state: absent
+  when: not hyprland_nerd_font_marker.stat.exists
+
 - name: "Ensure SDDM is enabled and running"
   ansible.builtin.systemd_service:
     name: sddm
@@ -98,6 +136,7 @@
   become_user: "{{ hyprland_file_owner }}"
   loop:
     - hypr
+    - hypr/conf
     - hypr/scripts
     - waybar
     - alacritty
@@ -132,8 +171,22 @@
   become: true
   become_user: "{{ hyprland_file_owner }}"
   loop:
-    - src: home/config/hypr/hyprland.conf.j2
-      dest: hypr/hyprland.conf
+    - src: home/config/hypr/hyprland.lua.j2
+      dest: hypr/hyprland.lua
+    - src: home/config/hypr/conf/monitors.lua.j2
+      dest: hypr/conf/monitors.lua
+    - src: home/config/hypr/conf/env.lua.j2
+      dest: hypr/conf/env.lua
+    - src: home/config/hypr/conf/autostart.lua.j2
+      dest: hypr/conf/autostart.lua
+    - src: home/config/hypr/conf/look.lua.j2
+      dest: hypr/conf/look.lua
+    - src: home/config/hypr/conf/input.lua.j2
+      dest: hypr/conf/input.lua
+    - src: home/config/hypr/conf/binds.lua.j2
+      dest: hypr/conf/binds.lua
+    - src: home/config/hypr/conf/rules.lua.j2
+      dest: hypr/conf/rules.lua
     - src: home/config/hypr/hyprlock.conf.j2
       dest: hypr/hyprlock.conf
     - src: home/config/waybar/style.css.j2
@@ -153,10 +206,10 @@
     - src: home/config/nwg-dock-hyprland/style.css.j2
       dest: nwg-dock-hyprland/style.css
 
-- name: "Ensure a per-machine local.conf exists (never overwritten)"
+- name: "Ensure a per-machine local.lua exists (never overwritten)"
   ansible.builtin.copy:
-    content: "# Per-machine Hyprland overrides. Sourced last by hyprland.conf; never managed.\n"
-    dest: "{{ hyprland_home_dir }}/.config/hypr/local.conf"
+    content: "-- Per-machine Hyprland overrides, loaded last by hyprland.lua. Never managed.\n"
+    dest: "{{ hyprland_home_dir }}/.config/hypr/local.lua"
     owner: "{{ hyprland_file_owner }}"
     group: "{{ hyprland_file_owner }}"
     mode: "0644"

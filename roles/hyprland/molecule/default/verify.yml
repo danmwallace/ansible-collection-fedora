@@ -2,26 +2,49 @@
 - name: Verify
   hosts: molecule
   gather_facts: false
+  vars:
+    hyprland_verify_home: /home/hyprtest
   tasks:
     - name: Stat the rendered user dotfiles
       ansible.builtin.stat:
-        path: "{{ item }}"
+        path: "{{ hyprland_verify_home }}/{{ item }}"
       loop:
-        - /home/hyprtest/.config/hypr/hyprland.conf
-        - /home/hyprtest/.config/hypr/hyprlock.conf
-        - /home/hyprtest/.config/waybar/style.css
-        - /home/hyprtest/.config/waybar/config
-        - /home/hyprtest/.config/alacritty/alacritty.toml
-        - /home/hyprtest/.config/wofi/style.css
+        - .config/hypr/hyprland.lua
+        - .config/hypr/conf/monitors.lua
+        - .config/hypr/conf/env.lua
+        - .config/hypr/conf/autostart.lua
+        - .config/hypr/conf/look.lua
+        - .config/hypr/conf/input.lua
+        - .config/hypr/conf/binds.lua
+        - .config/hypr/conf/rules.lua
+        - .config/hypr/local.lua
+        - .config/hypr/hyprlock.conf
+        - .config/waybar/config
+        - .config/alacritty/alacritty.toml
       register: hyprland_dotfiles
 
-    - name: Assert dotfiles were rendered
+    - name: Assert dotfiles were rendered and belong to the user
       ansible.builtin.assert:
         that:
           - item.stat.exists
           - item.stat.isreg
           - item.stat.pw_name == 'hyprtest'
       loop: "{{ hyprland_dotfiles.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Stat files the role must no longer render
+      ansible.builtin.stat:
+        path: "{{ hyprland_verify_home }}/{{ item }}"
+      loop:
+        - .config/hypr/hyprland.conf
+        - .config/hypr/local.conf
+      register: hyprland_forbidden
+
+    - name: Assert the old config format is absent
+      ansible.builtin.assert:
+        that: not item.stat.exists
+      loop: "{{ hyprland_forbidden.results }}"
       loop_control:
         label: "{{ item.item }}"
 
@@ -36,14 +59,59 @@
           - hyprland_sddm_theme.stat.exists
           - hyprland_sddm_theme.stat.isreg
 
-    - name: Read the rendered hyprland.conf
+    - name: Read the rendered hyprland.lua
       ansible.builtin.slurp:
-        src: /home/hyprtest/.config/hypr/hyprland.conf
-      register: hyprland_conf_contents
+        src: "{{ hyprland_verify_home }}/.config/hypr/hyprland.lua"
+      register: hyprland_entry
 
-    - name: Assert hyprland.conf was rendered with the Nord palette
+    - name: Assert hyprland.lua was rendered with the Nord palette
       vars:
-        rendered: "{{ hyprland_conf_contents.content | b64decode }}"
+        rendered: "{{ hyprland_entry.content | b64decode }}"
       ansible.builtin.assert:
         that:
-          - "'88c0d0' in rendered or '2e3440' in rendered"
+          - "'accent_primary = \"88c0d0\"' in rendered"
+
+    - name: Copy the verify helper into the instance
+      ansible.builtin.copy:
+        src: ../verify-lua.sh
+        dest: /usr/local/bin/verify-lua.sh
+        mode: "0755"
+
+    - name: Verify the rendered tree parses with Hyprland
+      ansible.builtin.command: /usr/local/bin/verify-lua.sh {{ hyprland_verify_home }}/.config/hypr
+      changed_when: false
+
+    - name: Stat the Nerd Font file
+      ansible.builtin.stat:
+        path: /usr/share/fonts/roboto-mono-nerd/RobotoMonoNerdFontPropo-Regular.ttf
+      register: hyprland_font_file
+
+    - name: Assert the Nerd Font is installed
+      ansible.builtin.assert:
+        that: hyprland_font_file.stat.exists
+
+    - name: Resolve the family name the configs use
+      ansible.builtin.command: fc-match -f '%{family}' RobotoMonoNerdFontPropo
+      changed_when: false
+      register: hyprland_font_match
+
+    - name: Assert fontconfig resolves RobotoMonoNerdFontPropo to the Nerd Font
+      ansible.builtin.assert:
+        that: "'Nerd Font Propo' in hyprland_font_match.stdout"
+
+    - name: Gather installed package facts
+      ansible.builtin.package_facts:
+        manager: rpm
+
+    - name: Assert hyprland-guiutils is installed
+      ansible.builtin.assert:
+        that: "'hyprland-guiutils' in ansible_facts.packages"
+
+    - name: Read the rendered Waybar config
+      ansible.builtin.slurp:
+        src: "{{ hyprland_verify_home }}/.config/waybar/config"
+      register: hyprland_waybar_config
+
+    - name: Assert the dnf-based updates module is gone
+      ansible.builtin.assert:
+        that: "'custom/updates' not in (hyprland_waybar_config.content | b64decode)"
