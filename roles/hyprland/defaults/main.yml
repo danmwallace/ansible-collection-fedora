@@ -27,3 +27,10 @@ hyprland_lock_wallpaper: "~/Pictures/Wallpapers/purple-green-foliage.jpg"
 hyprland_nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/RobotoMono.tar.xz"
 hyprland_nerd_font_checksum: "sha256:61f53438b240a00c87c92dc2c372db0bbb264473b36a8144ea62babf787f8383"
 hyprland_nerd_font_dir: /usr/share/fonts/roboto-mono-nerd
+
+# Desktop applications installed as RPMs. Image builds set this to [] and ship
+# them as Flatpaks instead.
+hyprland_desktop_apps:
+  - firefox
+  - libreoffice
+  - thunderbird

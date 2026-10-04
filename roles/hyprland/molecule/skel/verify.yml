@@ -119,3 +119,10 @@
     - name: Assert the dnf-based updates module is gone
       ansible.builtin.assert:
         that: "'custom/updates' not in (hyprland_waybar_config.content | b64decode)"
+
+    - name: Assert the desktop apps are absent in image mode
+      ansible.builtin.assert:
+        that:
+          - "'firefox' not in ansible_facts.packages"
+          - "'libreoffice-core' not in ansible_facts.packages"
+          - "'thunderbird' not in ansible_facts.packages"

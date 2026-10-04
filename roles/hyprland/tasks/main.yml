@@ -63,15 +63,19 @@
       - podman
       - nautilus
       - simple-scan
-      - firefox
-      - libreoffice
-      - thunderbird
       - alsa-sof-firmware
       - alsa-utils
       - gvfs
       - gvfs-mtp
     state: present
   become: true
+
+- name: "Ensure desktop applications are installed"
+  ansible.builtin.dnf:
+    name: "{{ hyprland_desktop_apps }}"
+    state: present
+  become: true
+  when: hyprland_desktop_apps | length > 0
 
 - name: "Check whether the Nerd Font is already installed"
   ansible.builtin.stat:
