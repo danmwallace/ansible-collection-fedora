@@ -25,3 +25,4 @@
         hyprland_manage_copr: false
         hyprland_manage_services: false
         hyprland_theme: nord
+        hyprland_desktop_apps: []

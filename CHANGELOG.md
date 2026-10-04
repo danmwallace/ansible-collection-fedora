@@ -7,6 +7,13 @@ and this collection adheres to [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-04
+
+### Added
+
+- `hyprland_desktop_apps` (default `firefox`, `libreoffice`, `thunderbird`) so
+  image builds can set it to `[]` and ship those apps as Flatpaks.
+
 ## [1.2.0] - 2026-10-04
 
 ### Changed

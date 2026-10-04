@@ -115,3 +115,9 @@
     - name: Assert the dnf-based updates module is gone
       ansible.builtin.assert:
         that: "'custom/updates' not in (hyprland_waybar_config.content | b64decode)"
+
+    - name: Assert the desktop apps are installed by default
+      ansible.builtin.assert:
+        that:
+          - "'firefox' in ansible_facts.packages"
+          - "'thunderbird' in ansible_facts.packages"

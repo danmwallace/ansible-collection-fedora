@@ -80,3 +80,11 @@ argument_specs:
         type: str
         required: false
         default: /usr/share/fonts/roboto-mono-nerd
+      hyprland_desktop_apps:
+        description:
+          - Desktop applications installed as RPMs. Set to an empty list on image
+            builds that ship them as Flatpaks.
+        type: list
+        elements: str
+        required: false
+        default: [firefox, libreoffice, thunderbird]

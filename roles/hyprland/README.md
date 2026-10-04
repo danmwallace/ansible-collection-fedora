@@ -31,6 +31,7 @@ The role enables the `lionheartp/Hyprland` COPR repository and installs from it.
 | `hyprland_nerd_font_url`   | str  | no       | nerd-fonts v3.5.1 `RobotoMono.tar.xz`  | Upstream tarball of the Nerd Font the templates reference.                                   |
 | `hyprland_nerd_font_checksum` | str | no      | `sha256:61f5...8383`                   | Checksum for the tarball, `get_url` format.                                                 |
 | `hyprland_nerd_font_dir`   | str  | no       | `/usr/share/fonts/roboto-mono-nerd`    | Directory the font files are extracted into.                                                 |
+| `hyprland_desktop_apps`    | list | no       | `[firefox, libreoffice, thunderbird]`  | RPM desktop apps; set `[]` on image builds that ship them as Flatpaks.                       |
 
 The `hyprland_theme` value selects a palette file under `vars/themes/<theme>.yml`,
 which exposes the `hyprland_palette` dict consumed by the role's Jinja templates.
