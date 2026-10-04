@@ -1,3 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
 # handlers file for hyprland
+
+- name: Refresh font cache
+  ansible.builtin.command: fc-cache -f
+  become: true
+  changed_when: true

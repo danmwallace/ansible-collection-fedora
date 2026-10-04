@@ -21,3 +21,9 @@ hyprland_manage_services: true
 # the user; image builds point these at a file shipped in /usr/share.
 hyprland_wallpaper: "~/Pictures/Wallpapers/gray-abstract.jpg"
 hyprland_lock_wallpaper: "~/Pictures/Wallpapers/purple-green-foliage.jpg"
+
+# Nerd Font the Waybar, Wofi and hyprlock templates reference as
+# RobotoMonoNerdFontPropo. Pinned upstream release; bump both values together.
+hyprland_nerd_font_url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/RobotoMono.tar.xz"
+hyprland_nerd_font_checksum: "sha256:61f53438b240a00c87c92dc2c372db0bbb264473b36a8144ea62babf787f8383"
+hyprland_nerd_font_dir: /usr/share/fonts/roboto-mono-nerd

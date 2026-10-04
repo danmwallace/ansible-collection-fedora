@@ -24,6 +24,7 @@
   ansible.builtin.dnf:
     name:
       - hyprland
+      - hyprland-guiutils
       - hyprpaper
       - hyprpicker
       - hypridle
@@ -71,6 +72,43 @@
       - gvfs-mtp
     state: present
   become: true
+
+- name: "Check whether the Nerd Font is already installed"
+  ansible.builtin.stat:
+    path: "{{ hyprland_nerd_font_dir }}/RobotoMonoNerdFontPropo-Regular.ttf"
+  register: hyprland_nerd_font_marker
+
+- name: "Ensure the Nerd Font archive is downloaded"
+  ansible.builtin.get_url:
+    url: "{{ hyprland_nerd_font_url }}"
+    dest: /tmp/hyprland-nerd-font.tar.xz
+    checksum: "{{ hyprland_nerd_font_checksum }}"
+    mode: "0644"
+  when: not hyprland_nerd_font_marker.stat.exists
+
+- name: "Ensure the Nerd Font directory exists"
+  ansible.builtin.file:
+    path: "{{ hyprland_nerd_font_dir }}"
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: "Ensure the Nerd Font is installed"
+  ansible.builtin.unarchive:
+    src: /tmp/hyprland-nerd-font.tar.xz
+    dest: "{{ hyprland_nerd_font_dir }}"
+    remote_src: true
+    creates: "{{ hyprland_nerd_font_dir }}/RobotoMonoNerdFontPropo-Regular.ttf"
+    mode: "0644"
+  become: true
+  when: not hyprland_nerd_font_marker.stat.exists
+  notify: Refresh font cache
+
+- name: "Ensure the Nerd Font archive is removed after install"
+  ansible.builtin.file:
+    path: /tmp/hyprland-nerd-font.tar.xz
+    state: absent
+  when: not hyprland_nerd_font_marker.stat.exists
 
 - name: "Ensure SDDM is enabled and running"
   ansible.builtin.systemd_service:
