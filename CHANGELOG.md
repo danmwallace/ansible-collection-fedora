@@ -7,6 +7,36 @@ and this collection adheres to [Semantic Versioning](https://semver.org/spec/v2.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-04
+
+### Changed
+
+- The Hyprland configuration is rendered as Lua (`hyprland.lua` plus
+  `conf/*.lua` modules) instead of `hyprland.conf`. Hyprland 0.57 removes the
+  `.conf` format; 0.56 already prefers the Lua file when both exist. Existing
+  `hyprland.conf` and `local.conf` files are left in place and ignored.
+- Per-machine overrides live in `~/.config/hypr/local.lua` (created once, never
+  overwritten). Move anything from `local.conf` there by hand.
+- Trimmed from the shipped config: the browser bind now launches `firefox`;
+  autostart no longer runs tailscale, the KTailctl and Vesktop Flatpaks or
+  `xhost`; duplicate layer rules and commented window rules are gone.
+
+### Added
+
+- RobotoMono Nerd Font (pinned upstream release, checksum-verified) installed to
+  `/usr/share/fonts/roboto-mono-nerd`; variables `hyprland_nerd_font_url`,
+  `hyprland_nerd_font_checksum`, `hyprland_nerd_font_dir`. The Waybar, Wofi and
+  hyprlock templates already reference it.
+- `hyprland-guiutils` (runtime dependency for Hyprland dialogs).
+- Molecule verifies the rendered tree with `Hyprland --verify-config`
+  (`molecule/verify-lua.sh`).
+
+### Removed
+
+- `hyprland.conf.j2` and the `local.conf` task.
+- Waybar `custom/updates` module (openSUSE leftover running `checkupdates` and
+  `zypper dup`).
+
 ## [1.1.2] - 2026-10-03
 
 ### Added

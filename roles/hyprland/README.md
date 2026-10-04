@@ -2,7 +2,8 @@
 
 Install and configure the Hyprland tiling Wayland compositor on Fedora, along with a
 curated set of supporting desktop tools (SDDM, Waybar, Alacritty, Wofi, nwg-drawer)
-and a themed set of user dotfiles.
+and a themed set of user dotfiles, including Hyprland's Lua config split into
+`conf/*.lua` modules.
 
 ## Requirements
 
@@ -27,6 +28,9 @@ The role enables the `lionheartp/Hyprland` COPR repository and installs from it.
 | `hyprland_manage_services` | bool | no       | `true`                               | Enable/start `sddm` and set `graphical.target`. Set `false` without a running systemd.          |
 | `hyprland_wallpaper`       | str  | no       | `~/Pictures/Wallpapers/gray-abstract.jpg` | Image passed to `swaybg` at session start.                                                 |
 | `hyprland_lock_wallpaper`  | str  | no       | `~/Pictures/Wallpapers/purple-green-foliage.jpg` | Image used as the `hyprlock` background.                                             |
+| `hyprland_nerd_font_url`   | str  | no       | nerd-fonts v3.5.1 `RobotoMono.tar.xz`  | Upstream tarball of the Nerd Font the templates reference.                                   |
+| `hyprland_nerd_font_checksum` | str | no      | `sha256:61f5...8383`                   | Checksum for the tarball, `get_url` format.                                                 |
+| `hyprland_nerd_font_dir`   | str  | no       | `/usr/share/fonts/roboto-mono-nerd`    | Directory the font files are extracted into.                                                 |
 
 The `hyprland_theme` value selects a palette file under `vars/themes/<theme>.yml`,
 which exposes the `hyprland_palette` dict consumed by the role's Jinja templates.
@@ -65,6 +69,18 @@ Inside a container or bootc image build (no systemd running, COPR enabled by dnf
         hyprland_manage_services: false
 ```
 
+## Per-machine overrides
+
+`~/.config/hypr/local.lua` is created once and never touched again. It is loaded
+last via `pcall(require, "local")`, so it can override anything. Example for a
+VM with a virtual display:
+
+```lua
+hl.monitor({ output = "Virtual-1", mode = "preferred", position = "auto", scale = 1 })
+hl.config({ cursor = { no_hardware_cursors = true } })
+hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")
+```
+
 ## Testing
 
 Two Molecule scenarios use the ansible-native delegated driver with podman:
@@ -73,6 +89,10 @@ Two Molecule scenarios use the ansible-native delegated driver with podman:
   the full role, including enabling `sddm`.
 - `skel`: a plain container mirroring an image build (`hyprland_home_dir: /etc/skel`,
   COPR enabled by `dnf`, services unmanaged).
+
+Both scenarios run `molecule/verify-lua.sh`, which parses the rendered tree with
+`Hyprland --verify-config` (inside the `atomic-hyprland` image when Hyprland is
+not installed locally).
 
 Both install the large desktop package set, so allow several minutes each.
 

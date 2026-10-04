@@ -62,3 +62,21 @@ argument_specs:
         type: str
         required: false
         default: "~/Pictures/Wallpapers/purple-green-foliage.jpg"
+      hyprland_nerd_font_url:
+        description:
+          - Upstream tarball of the RobotoMono Nerd Font the templates reference.
+        type: str
+        required: false
+        default: "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/RobotoMono.tar.xz"
+      hyprland_nerd_font_checksum:
+        description:
+          - Checksum for hyprland_nerd_font_url in get_url format (algorithm:hex).
+        type: str
+        required: false
+        default: "sha256:61f53438b240a00c87c92dc2c372db0bbb264473b36a8144ea62babf787f8383"
+      hyprland_nerd_font_dir:
+        description:
+          - Directory the font files are extracted into.
+        type: str
+        required: false
+        default: /usr/share/fonts/roboto-mono-nerd
